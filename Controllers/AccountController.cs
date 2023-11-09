@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyWebApplication.Models.EntityManager;
 using MyWebApplication.Models.ViewModel;
+
 namespace MyWebApplication.Controllers
 {
     public class AccountController : Controller
@@ -9,9 +10,20 @@ namespace MyWebApplication.Controllers
         {
             return View();
         }
+
+        public ActionResult Users()
+        {
+            UserManager um = new UserManager();
+            UsersModel user = um.GetAllUsers();
+
+            return View(user);
+        }
+
         [HttpPost]
         public ActionResult SignUp(UserModel user)
         {
+            ModelState.Remove("AccountImage");
+
             if (ModelState.IsValid)
             {
                 UserManager um = new UserManager();
@@ -31,6 +43,19 @@ namespace MyWebApplication.Controllers
         {
             var users = new UserManager().GetAllUsers();
             return View();
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> Update([FromBody] UserModel userData)
+        {
+            UserManager um = new UserManager();
+            if (um.IsLoginNameExist(userData.LoginName))
+            {
+                um.UpdateUserAccount(userData);
+                return RedirectToAction("Index");
+            }
+            // Handle the case when the login name doesn't exist, e.g., return a relevant error view.
+            return RedirectToAction("LoginNameNotFound");
         }
     }
 }
